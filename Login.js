@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './Login.css'; // Import external CSS for styling
+import logo from '../assets/logo.png'; // Correctly import the logo
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate(); // useNavigate hook to redirect users after login
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,45 +18,57 @@ const Login = () => {
 
         try {
             const { data } = await axios.post('http://localhost:5000/api/users/login', { email, password });
-            localStorage.setItem('token', data.token); // Store token in localStorage
+
+            // Store the token with the correct name as used in PasswordManager.js
+            localStorage.setItem('authToken', data.token); 
             alert('Login successful!');
-            navigate('/password-manager'); // Redirect to the PasswordManager page after successful login
+            navigate('/password-manager');
         } catch (err) {
-            setError('Invalid login credentials');
+            // Log the actual error for debugging
+            console.error('Login error:', err.response ? err.response.data : err.message);
+            setError('Invalid login credentials'); // Optionally display more specific error messages
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="container mt-5">
-            <h2 className="text-center">Login</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        className="form-control"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
+        <div className="login-container">
+            <div className="login-left">
+                <img src={logo} alt="LockOut Logo" className="logo" />
+                <h1 className="app-title">LockOut</h1>
+            </div>
+            <div className="login-right">
+                <div className="login-box">
+                    <h2 className="text-center">Login</h2>
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label>Email</label>
+                            <input
+                                type="email"
+                                className="form-control"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Password</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+                        {error && <p className="text-danger">{error}</p>}
+                        <button type="submit" className="btn btn-primary" disabled={loading}>
+                            {loading ? 'Logging in...' : 'Login'}
+                        </button>
+                    </form>
                 </div>
-                <div className="form-group">
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        className="form-control"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                {error && <p className="text-danger">{error}</p>}
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Login'}
-                </button>
-            </form>
+            </div>
         </div>
     );
 };

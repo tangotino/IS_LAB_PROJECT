@@ -1,6 +1,19 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+// Define the Password schema
+const passwordSchema = new mongoose.Schema({
+    website: {
+        type: String,
+        required: true,
+    },
+    password: {
+        type: String,
+        required: true,
+    },
+}, { timestamps: true }); // Adds createdAt and updatedAt fields
+
+// Define the User schema
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -10,12 +23,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true, // Ensure that the email is unique
+        lowercase: true, // Convert email to lowercase
     },
     password: {
         type: String,
-        required: true,
+        required: true, // This is the login password
     },
-}, { timestamps: true }); // Optional: Adds createdAt and updatedAt fields
+    passwords: [passwordSchema], // Array of passwords associated with the user
+}, { timestamps: true }); // Adds createdAt and updatedAt fields
 
 // Encrypt password before saving
 userSchema.pre('save', async function (next) {
@@ -32,5 +47,6 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password); // Compare passwords
 };
 
+// Create the User model
 const User = mongoose.model('User', userSchema);
 module.exports = User;

@@ -3,34 +3,26 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
-const passwordRoutes = require('./routes/passwordRoutes'); // Import password routes
-const { protect } = require('./middleware/authMiddleware'); // Import protect middleware
+const passwordRoutes = require('./routes/passwordRoutes'); 
+const { protect } = require('./middleware/authMiddleware'); 
 
 dotenv.config();
-
-// Log the MongoDB URI to the console (optional for debugging)
-console.log('MONGO_URI:', process.env.MONGO_URI);
-
-// Connect to the database
 connectDB();
 
 const app = express();
 
-// Enable CORS for all routes
-app.use(cors());
+// Enable CORS for your React app's origin
+app.use(cors({
+    origin: 'http://localhost:3000', // Replace with your React app's URL if different
+    credentials: true // Allow cookies to be sent if needed
+}));
 
 // Middleware to parse JSON requests
 app.use(express.json());
 
-// Simple test route to verify request body parsing
-app.post('/test', (req, res) => {
-    console.log('Request Body:', req.body);
-    res.json({ success: true, data: req.body });
-});
-
 // API routes
 app.use('/api/users', userRoutes);
-app.use('/api/passwords', protect, passwordRoutes); // Add password routes protected by middleware
+app.use('/api/passwords', protect, passwordRoutes); 
 
 // Error handling for unsupported routes
 app.use((req, res, next) => {

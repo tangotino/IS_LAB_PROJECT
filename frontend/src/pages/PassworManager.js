@@ -13,12 +13,12 @@ const PasswordManager = () => {
 
     // Fetch stored passwords from the backend
     const fetchPasswords = async () => {
-        const token = localStorage.getItem('token'); // Ensure the token name matches what you use
-        console.log('Auth Token:', token); // Log the auth token for debugging
+        const authToken = localStorage.getItem('authToken'); // Ensure the token name matches
+        console.log('Auth Token:', authToken); // Log the auth token for debugging
     
         try {
             const response = await axios.get('http://localhost:5000/api/users/passwords', {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${authToken}` },
             });
     
             // Check if the response data has the expected structure
@@ -53,7 +53,6 @@ const PasswordManager = () => {
             }
         }
     };
-    
 
     // Handle adding a new password
     const handleAddPassword = async (e) => {
@@ -61,9 +60,9 @@ const PasswordManager = () => {
         setError('');
 
         try {
-            const token = localStorage.getItem('authToken'); // Ensure the token name matches
+            const authToken = localStorage.getItem('authToken'); // Ensure the token name matches
             await axios.post('http://localhost:5000/api/users/passwords', { website, password }, {
-                headers: { Authorization: `Bearer ${token}` }, // Fixed string interpolation
+                headers: { Authorization: `Bearer ${authToken}` }, // Fixed string interpolation
             });
             fetchPasswords(); // Refresh the list of passwords
             setWebsite('');

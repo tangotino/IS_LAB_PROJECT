@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link for navigation
 import './Login.css'; // Import external CSS for styling
 import logo from '../assets/logo.png'; // Correctly import the logo
 
@@ -67,6 +67,12 @@ const Login = () => {
                             {loading ? 'Logging in...' : 'Login'}
                         </button>
                     </form>
+                    <div className="text-center mt-3">
+                        {/* New Button that navigates to the register page */}
+                        <Link to="/register" className="btn btn-secondary">
+                            New user? Register here
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>

@@ -5,7 +5,8 @@ import Register from './pages/Register';
 import PasswordManager from './pages/PasswordManager'; // Assuming PasswordManager is in 'pages' folder
 
 function App() {
-  const isAuthenticated = !!localStorage.getItem('token'); // Check if the user is authenticated
+  // Check if the user is authenticated by looking for 'authToken'
+  const isAuthenticated = !!localStorage.getItem('authToken');
 
   return (
     <Router>

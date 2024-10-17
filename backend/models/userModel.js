@@ -30,6 +30,16 @@ const userSchema = new mongoose.Schema({
         required: true, // This is the login password
     },
     passwords: [passwordSchema], // Array of passwords associated with the user
+
+    // Fields for 2FA
+    totpSecret: {
+        type: String, // Store the secret for TOTP
+        required: false, // Not required until 2FA is enabled
+    },
+    twoFAEnabled: {
+        type: Boolean,
+        default: false, // Default is disabled
+    },
 }, { timestamps: true }); // Adds createdAt and updatedAt fields
 
 // Encrypt password before saving

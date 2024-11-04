@@ -1,28 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import PasswordManager from './pages/PasswordManager'; // Assuming PasswordManager is in 'pages' folder
+import PasswordManager from './pages/PasswordManager';
 
 function App() {
-  // Check if the user is authenticated by looking for 'authToken'
-  const isAuthenticated = !!localStorage.getItem('authToken');
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
+
+  // Update authentication state on token change
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsAuthenticated(!!localStorage.getItem('authToken'));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   return (
     <Router>
       <Routes>
-        {/* Redirect root path to login */}
         <Route path="/" element={<Navigate to="/login" />} />
-
-        {/* Public routes */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/register" element={<Register />} />
-
-        {/* Protected route for password manager */}
-        <Route
-          path="/password-manager"
-          element={isAuthenticated ? <PasswordManager /> : <Navigate to="/login" />} // Protect route
-        />
+        <Route path="/password-manager" element={isAuthenticated ? <PasswordManager /> : <Navigate to="/login" />} />
       </Routes>
     </Router>
   );

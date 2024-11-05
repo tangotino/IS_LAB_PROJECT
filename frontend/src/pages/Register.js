@@ -13,6 +13,8 @@ const Register = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [qrCodeUrl, setQrCodeUrl] = useState(''); // State for QR code URL
+    const [totpSecret, setTotpSecret] = useState(''); // State for TOTP secret
+    const [showModal, setShowModal] = useState(false); 
     const navigate = useNavigate(); // Use navigate for redirection after successful registration
 
     const handleSubmit = async (e) => {
@@ -30,6 +32,8 @@ const Register = () => {
             });
             if (data.success) {
                 setQrCodeUrl(data.qrCodeUrl); // Set the QR code URL from the response
+                setTotpSecret(data.totpSecret); // Set the TOTP secret
+                setShowModal(true); // Show the modal
             } else {
                 setError(data.message || 'Registration failed');
             }
@@ -96,13 +100,6 @@ const Register = () => {
                             {loading ? 'Registering...' : 'Register'}
                         </button>
                     </form>
-                    {qrCodeUrl && ( // Display the QR code if available
-                        <div className="qr-code-container mt-4">
-                            <h3>Scan this QR Code with your Authenticator App</h3>
-                            <QRCodeCanvas value={qrCodeUrl} />
-                            <p>Or enter this code: <strong>{qrCodeUrl.split('secret=')[1]?.split('&')[0]}</strong></p>
-                        </div>
-                    )}
                     <div className="text-center mt-3">
                         {/* New Button that navigates to the login page */}
                         <Link to="/login" className="btn btn-secondary">
@@ -111,6 +108,24 @@ const Register = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Modal for QR Code Display */}
+            {showModal && (
+                <div className="modal-backdrop" onClick={() => setShowModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">Scan this QR Code</div>
+                        <div className="modal-body">
+                            <QRCodeCanvas value={qrCodeUrl} />
+                            <p>Or enter this code: <strong>{totpSecret}</strong></p>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn" onClick={() => setShowModal(false)}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

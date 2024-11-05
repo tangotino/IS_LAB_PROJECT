@@ -7,7 +7,7 @@ const qrcode = require('qrcode');
 
 const registerUser = async (req, res) => {
     console.log("Request Body:", req.body);
-    const { name, email, password, enable2FA } = req.body; // Add enable2FA to the request body
+    const { name, email, password, enable2FA } = req.body;
 
     // Ensure all fields are provided
     if (!name || !email || !password) {
@@ -20,39 +20,41 @@ const registerUser = async (req, res) => {
         return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
-    // Create a new user (the password will be hashed automatically)
+    // Create a new user and save immediately to avoid redundant saves
     const user = new User({
         name,
         email,
-        password, // Just save the plain password; it will be hashed in the model
-        twoFAEnabled: enable2FA || false, // Set twoFAEnabled based on user input
+        password, // The password will be hashed automatically in the model
+        twoFAEnabled: enable2FA || false,
     });
+    await user.save();
 
     // Only generate a TOTP secret and QR code if 2FA is enabled
     if (user.twoFAEnabled) {
         const secret = speakeasy.generateSecret({ length: 4 });
         user.totpSecret = secret.base32;
+        
+        // Save the TOTP secret
+        await user.save();
 
         console.log("Generated TOTP Secret:", secret.base32);  // Logs the secret to the console
         console.log("TOTP Auth URL:", secret.otpauth_url);
 
         // Generate a QR code for the user to scan
         const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url);
-        
-        // Send the JWT token and QR code URL to the user
-        res.status(201).json({ success: true, token: jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' }), qrCodeUrl });
+
+        // Send the JWT token, QR code URL, and TOTP secret to the user
+        res.status(201).json({ 
+            success: true, 
+            token: jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' }), 
+            qrCodeUrl,
+            totpSecret: secret.base32 // Include the TOTP secret
+        });
     } else {
-        // If 2FA is not enabled, just save the user and send the token
-        await user.save(); // The password is hashed automatically in the model
-
-        // Generate a JWT token
+        // If 2FA is not enabled, just send the token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-
-        // Send the JWT token to the user
         res.status(201).json({ success: true, token });
     }
-
-    await user.save(); // Save the user information (with hashed password)
 };
 
 
